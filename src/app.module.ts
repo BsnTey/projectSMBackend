@@ -1,11 +1,27 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { SequelizeConfigService } from './config/sequelizeConfig.service';
+import { ConfigModule } from '@nestjs/config';
+import { databaseConfig } from './config/configuration';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { AccountsController } from './accounts/accounts.controller';
+import { AccountsModule } from './accounts/accounts.module';
 
 @Module({
-  imports: [UsersModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    UsersModule,
+    SequelizeModule.forRootAsync({
+      imports: [ConfigModule],
+      useClass: SequelizeConfigService,
+    }),
+    ConfigModule.forRoot({
+      load: [databaseConfig],
+    }),
+    AuthModule,
+    AccountsModule,
+  ],
+  controllers: [AccountsController],
 })
 export class AppModule {}

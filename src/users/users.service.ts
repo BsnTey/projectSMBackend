@@ -1,25 +1,22 @@
-import { v4 as uuidv4 } from 'uuid';
 import { Injectable, Body, Get, Post, Patch, Param } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './models/users.entity';
+import { InjectModel } from '@nestjs/sequelize';
 
 @Injectable()
 export class UsersService {
-  private users = [];
+  constructor(@InjectModel(User) private userRepository: typeof User) {}
 
-  getAllUsers() {
-    return this.users;
+  async createUser(userDto: CreateUserDto) {
+    const user = await this.userRepository.create(userDto);
+    return user;
   }
 
-  getById(id: string) {
-    return this.users.find((user) => user.id === id);
-  }
-
-  createUser(UserDto: CreateUserDto) {
-    const uuidToken = uuidv4();
-    this.users.push({
-      ...UserDto,
-      id: uuidToken,
+  async getUserByEmail(email: string) {
+    const user = await this.userRepository.findOne({
+      where: { email },
+      include: { all: true },
     });
-    return uuidToken;
+    return user;
   }
 }
